@@ -15,6 +15,9 @@ import { AlertController } from './controllers/alert.controller';
 import { AlertService } from './services/alert.service';
 import mongoose from 'mongoose';
 import { AlertRecord, AlertRecordSchema } from './types/alert';
+import { EmergencyContactController } from './controllers/emergency-contact.controller';
+import { EmergencyContactService } from './services/emergency-contact.service';
+import { EmergencyContact, EmergencyContactSchema } from './types/emergency-contact.schema';
 
 // 添加预警模块相关的 Schema
 const AlertConfigSchema = new mongoose.Schema({
@@ -55,7 +58,8 @@ const RealTimeDataSchema = new mongoose.Schema({
       { name: EmergencySupply.name, schema: EmergencySupplySchema },
       { name: 'DeviceAlertConfig', schema: AlertConfigSchema },
       { name: 'DeviceRealTimeData', schema: RealTimeDataSchema },
-      { name: AlertRecord.name, schema: AlertRecordSchema }
+      { name: AlertRecord.name, schema: AlertRecordSchema },
+      { name: EmergencyContact.name, schema: EmergencyContactSchema }
     ]),
   ],
   controllers: [
@@ -63,14 +67,16 @@ const RealTimeDataSchema = new mongoose.Schema({
     DeviceController, 
     DocumentController,
     EmergencySupplyController,
-    AlertController
+    AlertController,
+    EmergencyContactController
   ],
   providers: [
     AppService, 
     DeviceService, 
     DocumentService,
     EmergencySupplyService,
-    AlertService
+    AlertService,
+    EmergencyContactService
   ],
 })
 export class AppModule {}

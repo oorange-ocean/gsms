@@ -1,6 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import * as d3 from 'd3';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import { EmergencyContact } from '../types/emergency-contact';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -219,6 +231,79 @@ const EmergencyFlowChart: React.FC = () => {
   return <svg ref={svgRef}></svg>;
 };
 
+const EmergencyContactList: React.FC = () => {
+  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/emergency-contacts');
+        if (!response.ok) throw new Error('获取联系人列表失败');
+        const data = await response.json();
+        setContacts(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '未知错误');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  return (
+    <TableContainer component={Paper}>
+      <Table sx={{ minWidth: 650 }} aria-label="emergency contacts table">
+        <TableHead>
+          <TableRow>
+            <TableCell>姓名</TableCell>
+            <TableCell>职务</TableCell>
+            <TableCell>部门</TableCell>
+            <TableCell>办公电话</TableCell>
+            <TableCell>手机</TableCell>
+            <TableCell>职责</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {contacts.map((contact) => (
+            <TableRow
+              key={contact._id}
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell component="th" scope="row">
+                {contact.name}
+              </TableCell>
+              <TableCell>{contact.title}</TableCell>
+              <TableCell>{contact.department}</TableCell>
+              <TableCell>{contact.phone}</TableCell>
+              <TableCell>{contact.mobile}</TableCell>
+              <TableCell>{contact.responsibility}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
 const EmergencyResponse: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
 
@@ -227,22 +312,49 @@ const EmergencyResponse: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+    <Box sx={{ 
+      width: '100%', 
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative', // 添加相对定位
+      overflow: 'hidden'    // 防止溢出
+    }}>
+      {/* 固定在顶部的 Tab 栏 */}
+      <Box sx={{ 
+        position: 'absolute', // 改为绝对定位
+        top: 0,
+        left: 0,
+        right: 0,
+        borderBottom: 1, 
+        borderColor: 'divider',
+        height: '48px',      // 固定高度
+        backgroundColor: 'background.paper',
+        zIndex: 2,          // 确保在最上层
+      }}>
         <Tabs value={tabValue} onChange={handleTabChange}>
           <Tab label="应急处理" />
           <Tab label="应急联系" />
         </Tabs>
       </Box>
       
-      <TabPanel value={tabValue} index={0}>
-        <Typography variant="h6" sx={{ mb: 2 }}>应急处理流程</Typography>
-        <EmergencyFlowChart />
-      </TabPanel>
-      
-      <TabPanel value={tabValue} index={1}>
-        <Typography>应急联系列表 (待实现)</Typography>
-      </TabPanel>
+      {/* 内容区域，添加上边距留出 Tab 栏的空间 */}
+      <Box sx={{ 
+        flex: 1,
+        mt: '48px',        // 为 Tab 栏留出空间
+        overflow: 'auto',  // 内容区域可滚动
+        position: 'relative'
+      }}>
+        <TabPanel value={tabValue} index={0}>
+          <Typography variant="h6" sx={{ mb: 2 }}>应急处理流程</Typography>
+          <EmergencyFlowChart />
+        </TabPanel>
+        
+        <TabPanel value={tabValue} index={1}>
+          <Typography variant="h6" sx={{ mb: 2 }}>应急联系人</Typography>
+          <EmergencyContactList />
+        </TabPanel>
+      </Box>
     </Box>
   );
 };

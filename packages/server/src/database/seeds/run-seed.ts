@@ -11,6 +11,7 @@ import { EmergencySupply } from '../../types/emergency-supply';
 import { emergencySupplySeeds } from './emergency-supply.seed';
 import { AlertRecord } from '../../types/alert';
 import { alertRecordSeeds } from './alert.seed';
+import { emergencyContacts } from './emergency-contact.seed';
 // 加载环境变量
 dotenv.config({ path: '.env' });
 
@@ -99,6 +100,17 @@ async function bootstrap() {
     console.log('正在插入预警记录种子数据...');
     await alertRecordModel.insertMany(alertRecordSeeds);
     console.log('成功插入预警记录种子数据');
+
+    // 获取应急联系人模型
+    const emergencyContactModel = app.get(getModelToken('EmergencyContact'));
+
+    // 清空现有数据
+    await emergencyContactModel.deleteMany({}).exec();
+
+    // 插入应急联系人种子数据
+    console.log('正在插入应急联系人种子数据...');
+    await emergencyContactModel.insertMany(emergencyContacts);
+    console.log('成功插入应急联系人种子数据');
 
     await app.close();
     process.exit(0);
