@@ -1,0 +1,246 @@
+/* 齿轮的通用样式 */
+%gear-base {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  }
+  
+  /* 大齿轮样式 */
+  .big-gear {
+    @extend %gear-base;
+    width: 200px;
+    height: 200px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    background-image: url('/images/big-gear.svg');
+  
+    .gear-content {
+      width: 60%;
+      height: 60%;
+      background-color: white;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+  
+      .material-icons {
+        font-size: 40px;
+        color: #4169E1;
+        margin-bottom: 10px;
+      }
+  
+      .user-name {
+        font-size: 16px;
+        color: #333;
+        font-weight: bold;
+      }
+    }
+  }
+  
+  /* 小齿轮样式 */
+  .small-gear {
+    @extend %gear-base;
+    width: 80px;
+    height: 80px;
+    z-index: 5;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    position: absolute;
+    
+    /* 内容区 */
+    .gear-content {
+      position: relative;
+      width: 60%;
+      height: 60%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;  /* 确保内容在最上层 */
+  
+      .material-icons {
+        font-size: 24px;
+        color: white;
+      }
+    }
+  
+    .gear-title {
+      position: absolute;
+      white-space: nowrap;
+      color: #666;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 3;
+    }
+  }
+  
+  /* 小齿轮位置调整 - 使用等间距圆形布局 */
+  $radius: 180px;
+  
+  .small-gear {
+    transition: all 0.3s ease;
+    
+    // 上
+    &-top {
+      top: calc(50% - #{$radius});
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+    
+    // 右上
+    &-top-right {
+      top: calc(50% - #{$radius * 0.7071});
+      left: calc(50% + #{$radius * 0.7071});
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+    
+    // 右
+    &-right {
+      top: 50%;
+      left: calc(50% + #{$radius});
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+    
+    // 右下
+    &-bottom-right {
+      top: calc(50% + #{$radius * 0.7071});
+      left: calc(50% + #{$radius * 0.7071});
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+    
+    // 下
+    &-bottom {
+      top: calc(50% + #{$radius});
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+    
+    // 左下
+    &-bottom-left {
+      top: calc(50% + #{$radius * 0.7071});
+      left: calc(50% - #{$radius * 0.7071});
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+    
+    // 左
+    &-left {
+      top: 50%;
+      left: calc(50% - #{$radius});
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+    
+    // 左上
+    &-top-left {
+      top: calc(50% - #{$radius * 0.7071});
+      left: calc(50% - #{$radius * 0.7071});
+      transform: translate(-50%, -50%) scale(1);
+  
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+  }
+  
+  /* 标题位置调整 */
+  .small-gear {
+    // 上方齿轮，文字在上
+    &-top .gear-title {
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 10px;
+    }
+    
+    // 右上方齿轮，文字在右上
+    &-top-right .gear-title {
+      left: 100%;
+      bottom: 50%;
+      transform: translate(10px, -100%);
+    }
+    
+    // 右侧齿轮，文字在右
+    &-right .gear-title {
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: 10px;
+    }
+    
+    // 右下方齿轮，文字在右下
+    &-bottom-right .gear-title {
+      left: 100%;
+      top: 50%;
+      transform: translate(10px, 0);
+    }
+    
+    // 下方齿轮，文字在下
+    &-bottom .gear-title {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 10px;
+    }
+    
+    // 左下方齿轮，文字在左下
+    &-bottom-left .gear-title {
+      right: 100%;
+      top: 50%;
+      transform: translate(-10px, 0);
+    }
+    
+    // 左侧齿轮，文字在左
+    &-left .gear-title {
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-right: 10px;
+    }
+    
+    // 左上方齿轮，文字在左上
+    &-top-left .gear-title {
+      right: 100%;
+      bottom: 50%;
+      transform: translate(-10px, -100%);
+    }
+  }
