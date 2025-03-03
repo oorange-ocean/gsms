@@ -8,6 +8,7 @@
     "build:server": "cd packages/server && pnpm run build",
     "build:client": "cd packages/client && pnpm run build",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "seed": "cd packages/server && pnpm run seed:run"
   }
 }
