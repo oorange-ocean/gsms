@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: gsms-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    networks:
+      - gsms-network
+  
+  server:
+    build:
+      context: ./packages/server
+      dockerfile: Dockerfile.dev
+    container_name: gsms-server
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    volumes:
+      - ./packages/server:/app
+      - server_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://admin:password@mongodb:27017
+    depends_on:
+      - mongodb
+    networks:
+      - gsms-network
+  
+  client:
+    build:
+      context: ./packages/client
+      dockerfile: Dockerfile.dev
+    container_name: gsms-client
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./packages/client:/app
+      - client_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - gsms-network
+
+volumes:
+  mongodb_data:
+  server_node_modules:
+  client_node_modules:
+
+networks:
+  gsms-network:
+    driver: bridge

@@ -1,0 +1,13 @@
+{
+  "name": "gsms",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd packages/server && pnpm run start:dev",
+    "dev:client": "cd packages/client && pnpm run dev",
+    "build:server": "cd packages/server && pnpm run build",
+    "build:client": "cd packages/client && pnpm run build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  }
+}
