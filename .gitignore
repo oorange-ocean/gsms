@@ -31,4 +31,4 @@ pnpm-debug.log*
 .DS_Store
 
 # Models
-models
+/packages/client/public/models
