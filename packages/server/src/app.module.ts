@@ -11,6 +11,30 @@ import { DocumentService } from './services/document.service';
 import { EmergencySupply, EmergencySupplySchema } from './types/emergency-supply';
 import { EmergencySupplyController } from './controllers/emergency-supply.controller';
 import { EmergencySupplyService } from './services/emergency-supply.service';
+import { AlertController } from './controllers/alert.controller';
+import { AlertService } from './services/alert.service';
+import mongoose from 'mongoose';
+import { AlertRecord, AlertRecordSchema } from './types/alert';
+
+// 添加预警模块相关的 Schema
+const AlertConfigSchema = new mongoose.Schema({
+  deviceId: { type: String, required: true },
+  alertType: { type: String, required: true },
+  warningThreshold: { type: Number, required: true },
+  dangerThreshold: { type: Number, required: true },
+  criticalThreshold: { type: Number, required: true },
+  unit: { type: String, required: true }
+});
+
+const RealTimeDataSchema = new mongoose.Schema({
+  deviceId: { type: String, required: true },
+  timestamp: { type: Date, required: true },
+  temperature: Number,
+  pressure: Number,
+  flowRate: Number,
+  valveStatus: Boolean,
+  gasConcentration: Number
+});
 
 @Module({
   imports: [
@@ -28,20 +52,25 @@ import { EmergencySupplyService } from './services/emergency-supply.service';
     MongooseModule.forFeature([
       { name: Device.name, schema: DeviceSchema },
       { name: Document.name, schema: DocumentSchema },
-      { name: EmergencySupply.name, schema: EmergencySupplySchema }
+      { name: EmergencySupply.name, schema: EmergencySupplySchema },
+      { name: 'DeviceAlertConfig', schema: AlertConfigSchema },
+      { name: 'DeviceRealTimeData', schema: RealTimeDataSchema },
+      { name: AlertRecord.name, schema: AlertRecordSchema }
     ]),
   ],
   controllers: [
     AppController, 
     DeviceController, 
     DocumentController,
-    EmergencySupplyController
+    EmergencySupplyController,
+    AlertController
   ],
   providers: [
     AppService, 
     DeviceService, 
     DocumentService,
-    EmergencySupplyService
+    EmergencySupplyService,
+    AlertService
   ],
 })
 export class AppModule {}

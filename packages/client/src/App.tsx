@@ -5,7 +5,7 @@ import DeviceManagement from './views/DeviceManagement';
 import DocumentManagement from './views/DocumentManagement';
 import RiskAnalysis from './views/RiskAnalysis';
 import EmergencySupplies from './views/EmergencySupplies';
-
+import SafetyAlert from './views/SafetyAlert';
 function App() {
   return (
     <Router>
@@ -40,6 +40,14 @@ function App() {
           element={
             <MainLayout>
               <EmergencySupplies />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/safety-alert"
+          element={
+            <MainLayout>
+              <SafetyAlert />
             </MainLayout>
           }
         />
