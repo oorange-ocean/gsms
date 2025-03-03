@@ -5,19 +5,22 @@ WORKDIR /app
 # 设置shell环境变量
 ENV SHELL=/bin/sh
 
-# 全局安装 pnpm，但不使用全局安装NestJS CLI
+# 全局安装 pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # 首先复制包文件
 COPY package*.json pnpm-lock.yaml* ./
 
-# 安装依赖，包括NestJS CLI作为本地开发依赖
+# 安装所有依赖（包括开发依赖）
 RUN pnpm install
-RUN pnpm add -D @nestjs/cli
+
+# 显式安装必要的依赖
+RUN pnpm add @nestjs/mongoose mongoose @nestjs/cli ts-node tsconfig-paths
 
 # 确保包可以全局可执行
 RUN mkdir -p node_modules/.bin && \
-    ln -sf ../node_modules/.bin/nest /usr/local/bin/nest || true
+    ln -sf ../node_modules/.bin/nest /usr/local/bin/nest || true && \
+    ln -sf ../node_modules/.bin/ts-node /usr/local/bin/ts-node || true
 
 # 设置正确的权限
 RUN mkdir -p node_modules && chown -R node:node /app

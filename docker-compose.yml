@@ -10,6 +10,11 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - gsms-network
   
@@ -23,12 +28,15 @@ services:
       - "9229:9229"
     volumes:
       - ./packages/server:/app
-      - server_node_modules:/app/node_modules
+      - ./packages/server/tsconfig.json:/app/tsconfig.json
+      - ./packages/server/tsconfig.json:/tsconfig.json
+      - /app/node_modules
     environment:
       - NODE_ENV=development
       - MONGO_URI=mongodb://admin:password@mongodb:27017
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - gsms-network
   
