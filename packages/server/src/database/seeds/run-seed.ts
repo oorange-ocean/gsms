@@ -7,6 +7,8 @@ import { Document } from '../../types/document';
 import { documentSeeds } from './document.seed';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
+import { EmergencySupply } from '../../types/emergency-supply';
+import { emergencySupplySeeds } from './emergency-supply.seed';
 
 // 加载环境变量
 dotenv.config({ path: '.env' });
@@ -74,6 +76,17 @@ async function bootstrap() {
     console.log('正在插入文档种子数据...');
     await documentModel.insertMany(documentSeeds);
     console.log('成功插入文档种子数据');
+
+    // 获取应急物资模型
+    const emergencySupplyModel = app.get(getModelToken(EmergencySupply.name));
+
+    // 清空现有数据
+    await emergencySupplyModel.deleteMany({}).exec();
+
+    // 插入种子数据
+    console.log('正在插入应急物资种子数据...');
+    await emergencySupplyModel.insertMany(emergencySupplySeeds);
+    console.log('成功插入应急物资种子数据');
 
     await app.close();
     process.exit(0);

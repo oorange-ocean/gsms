@@ -8,6 +8,9 @@ import { DeviceService } from './services/device.service';
 import { Document, DocumentSchema } from './types/document';
 import { DocumentController } from './controllers/document.controller';
 import { DocumentService } from './services/document.service';
+import { EmergencySupply, EmergencySupplySchema } from './types/emergency-supply';
+import { EmergencySupplyController } from './controllers/emergency-supply.controller';
+import { EmergencySupplyService } from './services/emergency-supply.service';
 
 @Module({
   imports: [
@@ -24,10 +27,21 @@ import { DocumentService } from './services/document.service';
     }),
     MongooseModule.forFeature([
       { name: Device.name, schema: DeviceSchema },
-      { name: Document.name, schema: DocumentSchema }
+      { name: Document.name, schema: DocumentSchema },
+      { name: EmergencySupply.name, schema: EmergencySupplySchema }
     ]),
   ],
-  controllers: [AppController, DeviceController, DocumentController],
-  providers: [AppService, DeviceService, DocumentService],
+  controllers: [
+    AppController, 
+    DeviceController, 
+    DocumentController,
+    EmergencySupplyController
+  ],
+  providers: [
+    AppService, 
+    DeviceService, 
+    DocumentService,
+    EmergencySupplyService
+  ],
 })
 export class AppModule {}
