@@ -1,0 +1,11 @@
+Model Information:
+* title:	Factory emergency telephone
+* source:	https://sketchfab.com/3d-models/factory-emergency-telephone-62cee071db0b43ec8dcab8e64aa174c7
+* author:	Virtual Museums of Małopolska (https://sketchfab.com/WirtualneMuzeaMalopolski)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Factory emergency telephone" (https://sketchfab.com/3d-models/factory-emergency-telephone-62cee071db0b43ec8dcab8e64aa174c7) by Virtual Museums of Małopolska (https://sketchfab.com/WirtualneMuzeaMalopolski) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

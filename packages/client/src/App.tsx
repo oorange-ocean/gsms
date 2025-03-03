@@ -7,6 +7,7 @@ import RiskAnalysis from './views/RiskAnalysis';
 import EmergencySupplies from './views/EmergencySupplies';
 import SafetyAlert from './views/SafetyAlert';
 import EmergencyResponse from './views/EmergencyResponse';
+import ModelViewer from './components/ModelViewer';
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
             </MainLayout>
           }
         />
+        <Route path="/monitoring" element={<ModelViewer />} />
       </Routes>
     </Router>
   );

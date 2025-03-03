@@ -34,7 +34,6 @@ export class AlertService {
   async getAlertRecords(processed?: boolean): Promise<AlertRecord[]> {
     const query = processed !== undefined ? { processed } : {};
     return this.alertRecordModel.find(query)
-      .populate('device')  // 关联设备信息
       .sort({ timestamp: -1 })
       .exec();
   }
@@ -116,5 +115,18 @@ export class AlertService {
       default:
         return 0;
     }
+  }
+
+  async findAll() {
+    // 移除 populate('device')
+    return this.alertRecordModel.find().sort('-timestamp').exec();
+  }
+
+  async findByDeviceId(deviceId: string) {
+    // 移除 populate('device')
+    return this.alertRecordModel
+      .find({ deviceId })
+      .sort('-timestamp')
+      .exec();
   }
 } 

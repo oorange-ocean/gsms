@@ -66,7 +66,6 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               key={item.path}
               active={location.pathname === item.path}
               onClick={() => navigate(item.path)}
-              button
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.title} />
