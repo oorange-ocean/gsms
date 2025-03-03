@@ -10,7 +10,7 @@ import * as dotenv from 'dotenv';
 import { EmergencySupply } from '../../types/emergency-supply';
 import { emergencySupplySeeds } from './emergency-supply.seed';
 import { AlertRecord } from '../../types/alert';
-import { alertConfigSeeds } from './alert.seed';
+import { alertRecordSeeds } from './alert.seed';
 // 加载环境变量
 dotenv.config({ path: '.env' });
 
@@ -89,18 +89,16 @@ async function bootstrap() {
     await emergencySupplyModel.insertMany(emergencySupplySeeds);
     console.log('成功插入应急物资种子数据');
 
-    // 获取预警配置模型
-    const alertConfigModel = app.get(getModelToken(AlertRecord.name));
+    // 获取预警记录模型
+    const alertRecordModel = app.get(getModelToken('AlertRecord'));
 
     // 清空现有数据
-    await alertConfigModel.deleteMany({}).exec();
+    await alertRecordModel.deleteMany({}).exec();
 
-    // 插入种子数据
-    console.log('正在插入预警配置种子数据...');
-    await alertConfigModel.insertMany(alertConfigSeeds);
-    console.log('成功插入预警配置种子数据');
-
-    
+    // 插入预警记录种子数据
+    console.log('正在插入预警记录种子数据...');
+    await alertRecordModel.insertMany(alertRecordSeeds);
+    console.log('成功插入预警记录种子数据');
 
     await app.close();
     process.exit(0);

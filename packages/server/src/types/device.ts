@@ -39,6 +39,9 @@ export class Device {
 
   @Prop()
   specification!: string;
+
+  @Prop()
+  _id?: string;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);

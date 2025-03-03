@@ -1,17 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Typography,
-  Tabs,
-  Tab,
-  Chip,
   IconButton,
   TextField,
   Dialog,
@@ -21,26 +11,143 @@ import {
   Button,
   CircularProgress,
   Alert,
-  Stack
+  Stack,
+  Grid
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
-  Check as CheckIcon,
   Search as SearchIcon
 } from '@mui/icons-material';
-import { AlertRecord, AlertLevel, AlertType } from '../types/alert';
-import { Device, ProcessArea } from '../types/device';
+import { AlertRecord, AlertLevel } from '../types/alert';
 
 // 预警级别对应的样式
-const alertLevelConfig: Record<AlertLevel, { color: string; severity: 'success' | 'warning' | 'error' }> = {
-  [AlertLevel.NORMAL]: { color: '#4CAF50', severity: 'success' },
-  [AlertLevel.WARNING]: { color: '#FF9800', severity: 'warning' },
-  [AlertLevel.DANGER]: { color: '#F44336', severity: 'error' },
-  [AlertLevel.CRITICAL]: { color: '#D32F2F', severity: 'error' }
+const alertLevelConfig: Record<AlertLevel, { color: string; pulseColor: string }> = {
+  [AlertLevel.NORMAL]: { 
+    color: '#4CAF50',
+    pulseColor: 'rgba(76, 175, 80, 0.3)'
+  },
+  [AlertLevel.WARNING]: { 
+    color: '#FF9800',
+    pulseColor: 'rgba(255, 152, 0, 0.3)'
+  },
+  [AlertLevel.DANGER]: { 
+    color: '#F44336',
+    pulseColor: 'rgba(244, 67, 54, 0.3)'
+  },
+  [AlertLevel.CRITICAL]: { 
+    color: '#D32F2F',
+    pulseColor: 'rgba(211, 47, 47, 0.3)'
+  }
+};
+
+// 阀门SVG组件
+const ValveComponent: React.FC<{
+  alert: AlertRecord;
+  onClick: () => void;
+}> = ({ alert, onClick }) => {
+  const config = alertLevelConfig[alert.alertLevel];
+  
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        width: 200,
+        height: 200,
+        cursor: 'pointer',
+        '&:hover': {
+          transform: 'scale(1.05)',
+          transition: 'transform 0.2s'
+        }
+      }}
+      onClick={onClick}
+    >
+      {/* 脉冲动画效果 */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 160,
+          height: 160,
+          borderRadius: '50%',
+          backgroundColor: config.pulseColor,
+          animation: alert.alertLevel !== AlertLevel.NORMAL ? 'pulse 2s infinite' : 'none',
+          '@keyframes pulse': {
+            '0%': {
+              transform: 'translate(-50%, -50%) scale(0.95)',
+              opacity: 0.5,
+            },
+            '70%': {
+              transform: 'translate(-50%, -50%) scale(1.1)',
+              opacity: 0.3,
+            },
+            '100%': {
+              transform: 'translate(-50%, -50%) scale(0.95)',
+              opacity: 0.5,
+            },
+          },
+        }}
+      />
+      
+      {/* 阀门SVG */}
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        {/* 管道 */}
+        <path
+          d="M40 100 H160"
+          stroke="#666"
+          strokeWidth="20"
+          fill="none"
+        />
+        
+        {/* 阀门主体 */}
+        <circle
+          cx="100"
+          cy="100"
+          r="40"
+          fill={config.color}
+          stroke="#444"
+          strokeWidth="4"
+        />
+        
+        {/* 阀门手轮 */}
+        <circle
+          cx="100"
+          cy="100"
+          r="30"
+          fill="none"
+          stroke="#444"
+          strokeWidth="4"
+        />
+        
+        {/* 手轮辐条 */}
+        {[0, 45, 90, 135].map((angle) => (
+          <line
+            key={angle}
+            x1="100"
+            y1="100"
+            x2={100 + Math.cos(angle * Math.PI / 180) * 30}
+            y2={100 + Math.sin(angle * Math.PI / 180) * 30}
+            stroke="#444"
+            strokeWidth="4"
+          />
+        ))}
+      </svg>
+
+      {/* 阀门信息 */}
+      <Box sx={{ textAlign: 'center', mt: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: config.color, fontWeight: 'bold' }}>
+          {alert.device.deviceCode}
+        </Typography>
+        <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+          {alert.alertType}: {alert.currentValue}
+        </Typography>
+      </Box>
+    </Box>
+  );
 };
 
 const SafetyAlert: React.FC = () => {
-  const [tabValue, setTabValue] = useState(0);
   const [alerts, setAlerts] = useState<AlertRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,12 +161,13 @@ const SafetyAlert: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const processed = tabValue === 1;
-      const response = await fetch(`http://localhost:3000/alerts/records?processed=${processed}`);
+      const response = await fetch('http://localhost:3000/alerts/records?processed=false');
       if (!response.ok) throw new Error('获取预警记录失败');
       const data = await response.json();
+      console.log('获取到的预警数据:', data); // 添加日志
       setAlerts(data);
     } catch (err) {
+      console.error('获取预警记录错误:', err); // 添加错误日志
       setError(err instanceof Error ? err.message : '未知错误');
     } finally {
       setLoading(false);
@@ -87,29 +195,42 @@ const SafetyAlert: React.FC = () => {
 
   useEffect(() => {
     fetchAlerts();
-  }, [tabValue]);
+    const interval = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // 过滤预警记录
-  const filteredAlerts = alerts.filter(alert => 
-    alert.device.deviceCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    alert.device.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAlerts = useMemo(() => {
+    if (!alerts || alerts.length === 0) return [];
+    return alerts.filter(alert => 
+      alert?.deviceId?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [alerts, searchTerm]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="h6">安全预警</Typography>
-        <IconButton onClick={() => fetchAlerts()} size="small">
+        <Typography variant="h6">安全预警监控</Typography>
+        <IconButton onClick={fetchAlerts} size="small">
           <RefreshIcon />
         </IconButton>
       </Stack>
-
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-          <Tab label="未处理预警" />
-          <Tab label="已处理预警" />
-        </Tabs>
-      </Box>
 
       <TextField
         size="small"
@@ -122,84 +243,48 @@ const SafetyAlert: React.FC = () => {
         sx={{ mb: 2 }}
       />
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
+      {filteredAlerts.length === 0 ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+          <Typography color="text.secondary">暂无预警</Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          {filteredAlerts.map((alert) => (
+            <Grid item key={alert._id}>
+              <ValveComponent
+                alert={{
+                  ...alert,
+                  device: {
+                    _id: alert.deviceId,
+                    deviceCode: alert.deviceId,
+                    name: alert.deviceId, // 暂时使用设备ID作为名称
+                    processArea: '未知区域'
+                  }
+                }}
+                onClick={() => {
+                  setSelectedAlert(alert);
+                  setDialogOpen(true);
+                }}
+              />
+            </Grid>
+          ))}
+        </Grid>
       )}
 
-      <TableContainer component={Paper} sx={{ flex: 1 }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>时间</TableCell>
-              <TableCell>设备编号</TableCell>
-              <TableCell>设备名称</TableCell>
-              <TableCell>预警类型</TableCell>
-              <TableCell>预警级别</TableCell>
-              <TableCell>当前值</TableCell>
-              <TableCell>阈值</TableCell>
-              {tabValue === 0 && <TableCell>操作</TableCell>}
-              {tabValue === 1 && <TableCell>处理说明</TableCell>}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} align="center">
-                  <CircularProgress />
-                </TableCell>
-              </TableRow>
-            ) : filteredAlerts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} align="center">
-                  暂无预警记录
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredAlerts.map((alert) => (
-                <TableRow key={alert._id}>
-                  <TableCell>{new Date(alert.timestamp).toLocaleString()}</TableCell>
-                  <TableCell>{alert.device.deviceCode}</TableCell>
-                  <TableCell>{alert.device.name}</TableCell>
-                  <TableCell>{alert.alertType}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={alert.alertLevel}
-                      size="small"
-                      sx={{
-                        bgcolor: alertLevelConfig[alert.alertLevel].color,
-                        color: 'white'
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>{alert.currentValue}</TableCell>
-                  <TableCell>{alert.threshold}</TableCell>
-                  {tabValue === 0 ? (
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setSelectedAlert(alert);
-                          setDialogOpen(true);
-                        }}
-                      >
-                        <CheckIcon />
-                      </IconButton>
-                    </TableCell>
-                  ) : (
-                    <TableCell>{alert.processNote}</TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>处理预警</DialogTitle>
+        <DialogTitle>处理预警 - {selectedAlert?.deviceId}</DialogTitle>
         <DialogContent>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              预警类型: {selectedAlert?.alertType}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              当前值: {selectedAlert?.currentValue} (阈值: {selectedAlert?.threshold})
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              时间: {selectedAlert?.timestamp && new Date(selectedAlert.timestamp).toLocaleString()}
+            </Typography>
+          </Box>
           <TextField
             autoFocus
             margin="dense"
@@ -214,7 +299,7 @@ const SafetyAlert: React.FC = () => {
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>取消</Button>
           <Button onClick={handleProcessAlert} variant="contained">
-            确认
+            确认处理
           </Button>
         </DialogActions>
       </Dialog>

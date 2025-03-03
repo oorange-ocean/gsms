@@ -1,6 +1,6 @@
 import { Device } from './device';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 // 预警级别枚举
 export enum AlertLevel {
@@ -44,6 +44,9 @@ export interface DeviceRealTimeData {
 export class AlertRecord extends Document {
   @Prop({ required: true })
   deviceId!: string;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Device' })
+  device!: Device;
 
   @Prop({ required: true })
   alertType!: string;

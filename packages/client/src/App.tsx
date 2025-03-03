@@ -6,6 +6,8 @@ import DocumentManagement from './views/DocumentManagement';
 import RiskAnalysis from './views/RiskAnalysis';
 import EmergencySupplies from './views/EmergencySupplies';
 import SafetyAlert from './views/SafetyAlert';
+import EmergencyResponse from './views/EmergencyResponse';
+
 function App() {
   return (
     <Router>
@@ -48,6 +50,14 @@ function App() {
           element={
             <MainLayout>
               <SafetyAlert />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/emergency-response"
+          element={
+            <MainLayout>
+              <EmergencyResponse />
             </MainLayout>
           }
         />
