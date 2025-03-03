@@ -17,7 +17,7 @@ const menuItems = [
   { title: '日常巡检', icon: <ScheduleIcon />, path: '/inspection' },
   { title: '数据监测', icon: <AnalyticsIcon />, path: '/monitoring' },
   { title: '设备管理', icon: <BuildIcon />, path: '/device-management' },
-  { title: '资料管理', icon: <FolderIcon />, path: '/document' },
+  { title: '资料管理', icon: <FolderIcon />, path: '/document-management' },
   { title: '风险分析', icon: <AssessmentIcon />, path: '/risk-analysis' },
   { title: '应急物资', icon: <Inventory2Icon />, path: '/emergency-supplies' },
   { title: '安全预警', icon: <WarningIcon />, path: '/safety-alert' },

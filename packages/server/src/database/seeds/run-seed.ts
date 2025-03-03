@@ -3,6 +3,8 @@ import { AppModule } from '../../app.module';
 import { getModelToken } from '@nestjs/mongoose';
 import { Device } from '../../types/device';
 import { deviceSeeds } from './device.seed';
+import { Document } from '../../types/document';
+import { documentSeeds } from './document.seed';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
 
@@ -43,25 +45,35 @@ async function bootstrap() {
     // 等待连接就绪
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    console.log('正在获取 DeviceModel...');
+    // 获取设备和文档模型
+    console.log('正在获取数据模型...');
     const deviceModel = app.get(getModelToken(Device.name));
+    const documentModel = app.get(getModelToken(Document.name));
 
-    // 修改连接测试方法
+    // 测试数据库连接
     try {
       await deviceModel.findOne().exec();
+      await documentModel.findOne().exec();
       console.log('MongoDB 连接测试成功');
     } catch (error) {
       console.error('MongoDB 连接测试失败:', error);
       process.exit(1);
     }
 
+    // 清空现有数据
     console.log('正在清空现有数据...');
     await deviceModel.deleteMany({}).exec();
+    await documentModel.deleteMany({}).exec();
     console.log('成功清空现有数据');
 
-    console.log('正在插入种子数据...');
+    // 插入种子数据
+    console.log('正在插入设备种子数据...');
     await deviceModel.insertMany(deviceSeeds);
-    console.log('成功插入种子数据');
+    console.log('成功插入设备种子数据');
+
+    console.log('正在插入文档种子数据...');
+    await documentModel.insertMany(documentSeeds);
+    console.log('成功插入文档种子数据');
 
     await app.close();
     process.exit(0);

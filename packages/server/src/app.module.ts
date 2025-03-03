@@ -5,6 +5,9 @@ import { AppService } from './app.service';
 import { Device, DeviceSchema } from './types/device';
 import { DeviceController } from './controllers/device.controller';
 import { DeviceService } from './services/device.service';
+import { Document, DocumentSchema } from './types/document';
+import { DocumentController } from './controllers/document.controller';
+import { DocumentService } from './services/document.service';
 
 @Module({
   imports: [
@@ -19,9 +22,12 @@ import { DeviceService } from './services/device.service';
         return connection;
       },
     }),
-    MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
+    MongooseModule.forFeature([
+      { name: Device.name, schema: DeviceSchema },
+      { name: Document.name, schema: DocumentSchema }
+    ]),
   ],
-  controllers: [AppController, DeviceController],
-  providers: [AppService, DeviceService],
+  controllers: [AppController, DeviceController, DocumentController],
+  providers: [AppService, DeviceService, DocumentService],
 })
 export class AppModule {}

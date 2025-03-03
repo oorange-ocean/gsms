@@ -7,6 +7,7 @@
     "dev:client": "cd packages/client && pnpm run dev",
     "build:server": "cd packages/server && pnpm run build",
     "build:client": "cd packages/client && pnpm run build",
-    "seed:run": "cd packages/server && pnpm run seed:run"
+    "seed:run": "cd packages/server && pnpm run seed:run",
+    "seed:all": "cd packages/server && pnpm run seed:all"
   }
 }
