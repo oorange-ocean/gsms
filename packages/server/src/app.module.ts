@@ -3,6 +3,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Device, DeviceSchema } from './types/device';
+import { DeviceController } from './controllers/device.controller';
+import { DeviceService } from './services/device.service';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { Device, DeviceSchema } from './types/device';
     }),
     MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, DeviceController],
+  providers: [AppService, DeviceService],
 })
 export class AppModule {}

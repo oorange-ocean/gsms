@@ -2,6 +2,7 @@ import React from 'react';
 import BigGear from '../components/BigGear';
 import SmallGear from '../components/SmallGear';
 import '@/styles/SystemSelector.scss';
+import { useNavigate } from 'react-router-dom';
 
 // 默认用户信息，实际应用中可能从API获取
 const defaultUser = {
@@ -62,9 +63,13 @@ const modules = [
 ];
 
 const SystemSelector: React.FC = () => {
+  const navigate = useNavigate();
+
   const handleModuleClick = (moduleName: string) => {
     console.log(`选择了 ${moduleName} 模块`);
-    // 这里可以添加导航逻辑
+    if (moduleName === '设备管理') {
+      navigate('/device-management');
+    }
   };
 
   return (
