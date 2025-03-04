@@ -8,7 +8,7 @@ import EmergencySupplies from './views/EmergencySupplies';
 import SafetyAlert from './views/SafetyAlert';
 import EmergencyResponse from './views/EmergencyResponse';
 import ModelViewer from './components/ModelViewer';
-
+import MapView from './views/MapView';
 function App() {
   return (
     <Router>
@@ -63,6 +63,14 @@ function App() {
           }
         />
         <Route path="/monitoring" element={<ModelViewer />} />
+        <Route
+          path="/map"
+          element={
+            <MainLayout>
+              <MapView />
+            </MainLayout>
+          }
+        />
       </Routes>
     </Router>
   );

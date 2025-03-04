@@ -8,7 +8,8 @@ import {
   Assessment as AssessmentIcon,
   Inventory2 as Inventory2Icon,
   Warning as WarningIcon,
-  Emergency as EmergencyIcon
+  Emergency as EmergencyIcon,
+  Map as MapIcon
 } from '@mui/icons-material';
 
 const DRAWER_WIDTH = 240;
@@ -21,7 +22,8 @@ const menuItems = [
   { title: '风险分析', icon: <AssessmentIcon />, path: '/risk-analysis' },
   { title: '应急物资', icon: <Inventory2Icon />, path: '/emergency-supplies' },
   { title: '安全预警', icon: <WarningIcon />, path: '/safety-alert' },
-  { title: '应急响应', icon: <EmergencyIcon />, path: '/emergency-response' }
+  { title: '应急响应', icon: <EmergencyIcon />, path: '/emergency-response' },
+  { title: '二维地图', icon: <MapIcon />, path: '/map' }
 ];
 
 const StyledDrawer = styled(Drawer)({
