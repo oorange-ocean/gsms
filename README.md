@@ -40,5 +40,3 @@
 - Node.js >= 16
 - MongoDB >= 4.4
 - Mapbox Access Token
-
-## 项目结构

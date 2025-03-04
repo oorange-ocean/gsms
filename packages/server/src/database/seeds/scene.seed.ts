@@ -11,9 +11,8 @@ export const sceneSeeds: Partial<Scene>[] = [
       pitch: 60,
       bearing: -17.6
     },
-    imageUrl: '/images/scenes/overview.jpg',
-    audioUrl: '/audio/scenes/overview.mp3',
-    videoUrl: '/video/scenes/overview.mp4',
+    imageUrl: '/images/scenes/接收站全景.jpeg',
+    audioUrl: '/audio/scenes/接收站全景.mp3',
     tags: ['全景', '鸟瞰']
   },
   {
@@ -26,8 +25,8 @@ export const sceneSeeds: Partial<Scene>[] = [
       pitch: 45,
       bearing: 0
     },
-    imageUrl: '/images/scenes/dock.jpg',
-    audioUrl: '/audio/scenes/dock.mp3',
+    imageUrl: '/images/scenes/码头区.jpeg',
+    audioUrl: '/audio/scenes/码头区.mp3',
     tags: ['码头', '泊位']
   },
   {
@@ -40,8 +39,8 @@ export const sceneSeeds: Partial<Scene>[] = [
       pitch: 45,
       bearing: 30
     },
-    imageUrl: '/images/scenes/tank.jpg',
-    videoUrl: '/video/scenes/tank.mp4',
+    imageUrl: '/images/scenes/储罐区.jpeg',
+    audioUrl: '/audio/scenes/储罐区.mp3',
     tags: ['储罐', '储存']
   }
 ]; 
