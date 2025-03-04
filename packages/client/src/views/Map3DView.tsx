@@ -22,8 +22,8 @@ const Map3DView: React.FC = () => {
       if (!mapContainer.current) return;
 
       const centerPoint = {
-        lng: 114.41703647375107,
-        lat: 23.10750961303711,
+        lng: -74.0066,
+        lat: 40.7135,
         zoom: 15,
         pitch: 45,
         bearing: -17.6,
@@ -34,7 +34,7 @@ const Map3DView: React.FC = () => {
         container: mapContainer.current,
         style: viewMode === 'satellite' 
           ? 'mapbox://styles/mapbox/satellite-streets-v12'
-          : 'mapbox://styles/mapbox/streets-v12',
+          : 'mapbox://styles/mapbox/light-v10',
         center: [centerPoint.lng, centerPoint.lat],
         zoom: centerPoint.zoom,
         pitch: centerPoint.pitch,
@@ -53,6 +53,23 @@ const Map3DView: React.FC = () => {
 
       // 添加3D建筑图层
       map.current.on('load', () => {
+        // 获取所有图层
+        const layers = map.current?.getStyle().layers;
+        let labelLayerId;
+        
+        // 查找标签图层
+        for (const layer of layers || []) {
+          if (layer.type === 'symbol' && layer.layout?.['text-field']) {
+            labelLayerId = layer.id;
+            break;
+          }
+        }
+
+        // 确保在添加图层前先检查是否已存在
+        if (map.current?.getLayer('3d-buildings')) {
+          map.current.removeLayer('3d-buildings');
+        }
+
         map.current?.addLayer({
           'id': '3d-buildings',
           'source': 'composite',
@@ -61,16 +78,20 @@ const Map3DView: React.FC = () => {
           'type': 'fill-extrusion',
           'minzoom': 15,
           'paint': {
-            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-color': '#ffffff',
             'fill-extrusion-height': [
-              'interpolate', ['linear'], ['zoom'],
-              15, 0,
-              15.05, ['get', 'height']
+              'get', 'height'  // 直接使用建筑物高度
             ],
-            'fill-extrusion-base': ['get', 'min_height'],
-            'fill-extrusion-opacity': 0.6
+            'fill-extrusion-base': [
+              'get', 'min_height'  // 直接使用建筑物基础高度
+            ],
+            'fill-extrusion-opacity': 0.9
           }
-        });
+        }, labelLayerId);
+
+        // 添加调试信息
+        console.log('3D buildings layer added');
+        console.log('Current layers:', map.current?.getStyle().layers);
 
         setMapInitialized(true);
         resizeMap();
