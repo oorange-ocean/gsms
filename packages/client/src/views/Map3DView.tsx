@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Button, Stack, Snackbar, Alert, Paper, Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup, Button, Stack, Snackbar, Alert, Paper, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import * as turf from '@turf/turf';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import CloseIcon from '@mui/icons-material/Close';
+import Chip from '@mui/material/Chip';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -22,6 +24,7 @@ const Map3DView: React.FC = () => {
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const resizeMap = () => {
     if (map.current) {
@@ -346,16 +349,18 @@ const Map3DView: React.FC = () => {
     });
     
     setSelectedScene(scene);
-    setMediaDialogOpen(true);
+    setSidebarOpen(true);
   };
 
   return (
     <Box sx={{ 
-      p: 3, 
-      height: 'calc(100vh - 32px)', 
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      p: 3,
       overflow: 'hidden',
-      width: '100%',
-      minWidth: '800px',
       display: 'flex',
       flexDirection: 'column'
     }}>
@@ -367,7 +372,8 @@ const Map3DView: React.FC = () => {
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         borderRadius: 2,
         p: 2,
-        boxShadow: 1
+        boxShadow: 1,
+        zIndex: 1
       }}>
         <Typography variant="h5" sx={{ fontWeight: 'medium' }}>三维地图</Typography>
         <Stack direction="row" spacing={3} alignItems="center">
@@ -449,20 +455,163 @@ const Map3DView: React.FC = () => {
         </Stack>
       </Box>
       
-      <Box 
-        ref={mapContainer} 
-        sx={{ 
-          flex: 1,
-          width: '100%',
-          minWidth: '800px',
-          borderRadius: 2,
-          overflow: 'hidden',
-          boxShadow: 3,
-          position: 'relative'
-        }} 
-      />
-      
-      {/* 添加操作提示 Snackbar */}
+      <Box sx={{ 
+        position: 'relative',
+        flex: 1,
+        width: '100%',
+        height: '100%'
+      }}>
+        {/* 地图容器 */}
+        <Box 
+          ref={mapContainer} 
+          sx={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: 3
+          }} 
+        />
+
+        {/* 场景选择器 */}
+        <Paper 
+          sx={{ 
+            position: 'absolute',
+            top: 20,
+            right: 20,
+            zIndex: 1,
+            p: 2,
+            maxWidth: 300,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2 }}>场景导览</Typography>
+          <Stack spacing={1}>
+            {scenes.map((scene) => (
+              <Button
+                key={scene.name}
+                variant="outlined"
+                onClick={() => handleSceneChange(scene)}
+                startIcon={<LocationOnIcon />}
+                sx={{
+                  justifyContent: 'flex-start',
+                  px: 2,
+                  backgroundColor: selectedScene?.name === scene.name ? 'action.selected' : 'transparent'
+                }}
+              >
+                {scene.name}
+              </Button>
+            ))}
+          </Stack>
+        </Paper>
+
+        {/* 场景详情侧边栏 */}
+        <Paper
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: '400px',
+            transform: `translateX(${sidebarOpen ? '0' : '100%'})`,
+            transition: 'transform 0.3s ease-in-out',
+            overflowY: 'auto',
+            zIndex: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '8px 0 0 8px',
+            boxShadow: '-4px 0 8px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          {selectedScene && (
+            <Box sx={{ p: 3 }}>
+              {/* 关闭按钮 */}
+              <IconButton
+                onClick={() => setSidebarOpen(false)}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+
+              {/* 场景标题 */}
+              <Typography variant="h5" sx={{ mb: 2, pr: 4 }}>
+                {selectedScene.name}
+              </Typography>
+
+              {/* 场景图片 */}
+              <Box 
+                sx={{ 
+                  mb: 2,
+                  '& img': {
+                    width: '100%',
+                    borderRadius: 2,
+                    boxShadow: 1
+                  }
+                }}
+              >
+                <img 
+                  src={selectedScene.imageUrl} 
+                  alt={selectedScene.name}
+                  loading="lazy"
+                />
+              </Box>
+
+              {/* 场景描述 */}
+              <Typography variant="body1" sx={{ mb: 3 }}>
+                {selectedScene.description}
+              </Typography>
+
+              {/* 标签 */}
+              <Box sx={{ mb: 3 }}>
+                {selectedScene.tags?.map((tag) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    size="small"
+                    sx={{ mr: 1, mb: 1 }}
+                  />
+                ))}
+              </Box>
+
+              {/* 音频播放器 */}
+              {selectedScene.audioUrl && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    语音介绍
+                  </Typography>
+                  <audio 
+                    controls 
+                    style={{ width: '100%' }}
+                  >
+                    <source src={selectedScene.audioUrl} type="audio/mpeg" />
+                  </audio>
+                </Box>
+              )}
+
+              {/* 视频链接 */}
+              {selectedScene.videoUrl && (
+                <Button
+                  fullWidth
+                  variant="contained"
+                  startIcon={<PlayArrowIcon />}
+                  onClick={() => window.open(selectedScene.videoUrl)}
+                  sx={{ mt: 2 }}
+                >
+                  观看视频介绍
+                </Button>
+              )}
+            </Box>
+          )}
+        </Paper>
+      </Box>
+
+      {/* Snackbar 保持不变 */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -478,67 +627,6 @@ const Map3DView: React.FC = () => {
           {helpMessage}
         </Alert>
       </Snackbar>
-
-      {/* 添加场景选择器组件 */}
-      <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 1 }}>
-        <Paper sx={{ p: 2, maxWidth: 300 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>场景导览</Typography>
-          <Stack spacing={1}>
-            {scenes.map((scene) => (
-              <Button
-                key={scene.name}
-                variant="outlined"
-                onClick={() => handleSceneChange(scene)}
-                startIcon={<LocationOnIcon />}
-              >
-                {scene.name}
-              </Button>
-            ))}
-          </Stack>
-        </Paper>
-      </Box>
-
-      {/* 添加媒体弹窗组件 */}
-      <Dialog
-        open={mediaDialogOpen}
-        onClose={() => setMediaDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        {selectedScene && (
-          <>
-            <DialogTitle>{selectedScene.name}</DialogTitle>
-            <DialogContent>
-              <Box sx={{ mb: 2 }}>
-                <img 
-                  src={selectedScene.imageUrl} 
-                  alt={selectedScene.name}
-                  style={{ width: '100%', borderRadius: 8 }}
-                />
-              </Box>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {selectedScene.description}
-              </Typography>
-              <Stack direction="row" spacing={2}>
-                {selectedScene.audioUrl && (
-                  <audio controls>
-                    <source src={selectedScene.audioUrl} type="audio/mpeg" />
-                  </audio>
-                )}
-                {selectedScene.videoUrl && (
-                  <Button
-                    variant="contained"
-                    startIcon={<PlayArrowIcon />}
-                    onClick={() => window.open(selectedScene.videoUrl)}
-                  >
-                    查看视频介绍
-                  </Button>
-                )}
-              </Stack>
-            </DialogContent>
-          </>
-        )}
-      </Dialog>
     </Box>
   );
 };
