@@ -40,9 +40,9 @@ const MapView: React.FC = () => {
 
       // 大连 LNG 接收站的大致坐标
       const dalianLNG = {
-        lng: 121.8154,
-        lat: 39.0456,
-        zoom: 14
+        lng: 114.41703647375107,
+        lat: 23.10750961303711,
+        zoom: 12
       };
 
       map.current = new mapboxgl.Map({

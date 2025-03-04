@@ -9,6 +9,7 @@ import SafetyAlert from './views/SafetyAlert';
 import EmergencyResponse from './views/EmergencyResponse';
 import ModelViewer from './components/ModelViewer';
 import MapView from './views/MapView';
+import Map3DView from './views/Map3DView';
 function App() {
   return (
     <Router>
@@ -68,6 +69,14 @@ function App() {
           element={
             <MainLayout>
               <MapView />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/map3d"
+          element={
+            <MainLayout>
+              <Map3DView />
             </MainLayout>
           }
         />
