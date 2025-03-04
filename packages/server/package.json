@@ -19,8 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:test": "ts-node src/database/seeds/test-seed.ts",
-    "seed:run": "ts-node src/database/seeds/run-seed.ts",
-    "seed:all": "pnpm run seed:test && pnpm run seed:run"
+    "seed": "ts-node src/database/seeds/run-seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

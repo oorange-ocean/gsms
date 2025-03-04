@@ -12,6 +12,8 @@ import { emergencySupplySeeds } from './emergency-supply.seed';
 import { AlertRecord } from '../../types/alert';
 import { alertRecordSeeds } from './alert.seed';
 import { emergencyContacts } from './emergency-contact.seed';
+import { Scene } from '../../types/scene';
+import { sceneSeeds } from './scene.seed';
 // 加载环境变量
 dotenv.config({ path: '.env' });
 
@@ -111,6 +113,17 @@ async function bootstrap() {
     console.log('正在插入应急联系人种子数据...');
     await emergencyContactModel.insertMany(emergencyContacts);
     console.log('成功插入应急联系人种子数据');
+
+    // 获取场景模型
+    const sceneModel = app.get(getModelToken('Scene'));
+
+    // 清空现有数据
+    await sceneModel.deleteMany({}).exec();
+
+    // 插入场景种子数据
+    console.log('正在插入场景种子数据...');
+    await sceneModel.insertMany(sceneSeeds);
+    console.log('成功插入场景种子数据');
 
     await app.close();
     process.exit(0);

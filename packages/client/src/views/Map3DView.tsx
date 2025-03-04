@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Button, Stack, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup, Button, Stack, Snackbar, Alert, Paper, Dialog, DialogTitle, DialogContent } from '@mui/material';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import * as turf from '@turf/turf';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -17,6 +19,9 @@ const Map3DView: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [currentTool, setCurrentTool] = useState('');
   const [helpMessage, setHelpMessage] = useState('');
+  const [scenes, setScenes] = useState<Scene[]>([]);
+  const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
 
   const resizeMap = () => {
     if (map.current) {
@@ -314,6 +319,36 @@ const Map3DView: React.FC = () => {
     setSnackbarOpen(false);
   };
 
+  // 获取场景数据
+  useEffect(() => {
+    const fetchScenes = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/scenes');
+        const data = await response.json();
+        setScenes(data);
+      } catch (error) {
+        console.error('获取场景数据失败:', error);
+      }
+    };
+    fetchScenes();
+  }, []);
+
+  // 场景切换函数
+  const handleSceneChange = (scene: Scene) => {
+    if (!map.current) return;
+    
+    map.current.flyTo({
+      center: [scene.location.lng, scene.location.lat],
+      zoom: scene.location.zoom,
+      pitch: scene.location.pitch,
+      bearing: scene.location.bearing,
+      duration: 2000
+    });
+    
+    setSelectedScene(scene);
+    setMediaDialogOpen(true);
+  };
+
   return (
     <Box sx={{ 
       p: 3, 
@@ -443,6 +478,67 @@ const Map3DView: React.FC = () => {
           {helpMessage}
         </Alert>
       </Snackbar>
+
+      {/* 添加场景选择器组件 */}
+      <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 1 }}>
+        <Paper sx={{ p: 2, maxWidth: 300 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>场景导览</Typography>
+          <Stack spacing={1}>
+            {scenes.map((scene) => (
+              <Button
+                key={scene.name}
+                variant="outlined"
+                onClick={() => handleSceneChange(scene)}
+                startIcon={<LocationOnIcon />}
+              >
+                {scene.name}
+              </Button>
+            ))}
+          </Stack>
+        </Paper>
+      </Box>
+
+      {/* 添加媒体弹窗组件 */}
+      <Dialog
+        open={mediaDialogOpen}
+        onClose={() => setMediaDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        {selectedScene && (
+          <>
+            <DialogTitle>{selectedScene.name}</DialogTitle>
+            <DialogContent>
+              <Box sx={{ mb: 2 }}>
+                <img 
+                  src={selectedScene.imageUrl} 
+                  alt={selectedScene.name}
+                  style={{ width: '100%', borderRadius: 8 }}
+                />
+              </Box>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {selectedScene.description}
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                {selectedScene.audioUrl && (
+                  <audio controls>
+                    <source src={selectedScene.audioUrl} type="audio/mpeg" />
+                  </audio>
+                )}
+                {selectedScene.videoUrl && (
+                  <Button
+                    variant="contained"
+                    startIcon={<PlayArrowIcon />}
+                    onClick={() => window.open(selectedScene.videoUrl)}
+                  >
+                    查看视频介绍
+                  </Button>
+                )}
+              </Stack>
+            </DialogContent>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 };
