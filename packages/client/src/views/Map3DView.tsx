@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import { Box, Typography, ToggleButton, ToggleButtonGroup, Button, Stack, Snackbar, Alert } from '@mui/material';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import * as turf from '@turf/turf';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -10,10 +13,50 @@ const Map3DView: React.FC = () => {
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
   const [viewMode, setViewMode] = useState('satellite');
+  const drawRef = useRef<MapboxDraw | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [currentTool, setCurrentTool] = useState('');
+  const [helpMessage, setHelpMessage] = useState('');
 
   const resizeMap = () => {
     if (map.current) {
       map.current.resize();
+    }
+  };
+
+  const getHelpMessage = (mode: string) => {
+    switch (mode) {
+      case 'draw_line_string':
+        return '点击地图开始绘制线段，继续点击添加节点，双击结束绘制。将显示线段总长度。';
+      case 'draw_polygon':
+        return '点击地图开始绘制多边形，继续点击添加顶点，点击起点或双击结束绘制。将显示多边形面积。';
+      case 'draw_point':
+        return '点击地图添加标记点。';
+      default:
+        return '';
+    }
+  };
+
+  const handleDrawTool = (mode: string) => {
+    if (!drawRef.current || !map.current) return;
+    
+    drawRef.current.changeMode(mode);
+    setCurrentTool(mode);
+    const message = getHelpMessage(mode);
+    setHelpMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleClearDraw = () => {
+    if (!drawRef.current || !map.current) return;
+    
+    // 清除所有绘制
+    drawRef.current.deleteAll();
+    
+    // 移除所有弹出窗口
+    const popups = document.getElementsByClassName('mapboxgl-popup');
+    while (popups[0]) {
+      popups[0].remove();
     }
   };
 
@@ -50,6 +93,160 @@ const Map3DView: React.FC = () => {
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
       map.current.addControl(new mapboxgl.ScaleControl(), 'bottom-left');
+
+      // 初始化绘图工具
+      drawRef.current = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          polygon: false,
+          line_string: false,
+          point: false,
+          trash: false
+        },
+        defaultMode: 'simple_select',
+        touchEnabled: false,
+        boxSelect: false,
+        clickBuffer: 4,
+        touchBuffer: 25,
+        keybindings: true,
+        styles: [
+          {
+            id: 'gl-draw-line',
+            type: 'line',
+            filter: ['all', ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
+            layout: {
+              'line-cap': 'round',
+              'line-join': 'round'
+            },
+            paint: {
+              'line-color': '#438EE4',
+              'line-dasharray': [0.2, 2],
+              'line-width': 4,
+              'line-opacity': 0.7
+            }
+          },
+          {
+            id: 'gl-draw-line-point',
+            type: 'circle',
+            filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'vertex']],
+            paint: {
+              'circle-radius': 6,
+              'circle-color': '#fff',
+              'circle-stroke-color': '#438EE4',
+              'circle-stroke-width': 2
+            }
+          },
+          {
+            id: 'gl-draw-polygon-fill',
+            type: 'fill',
+            filter: ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+            paint: {
+              'fill-color': '#438EE4',
+              'fill-outline-color': '#438EE4',
+              'fill-opacity': 0.1
+            }
+          },
+          {
+            id: 'gl-draw-polygon-stroke',
+            type: 'line',
+            filter: ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+            layout: {
+              'line-cap': 'round',
+              'line-join': 'round'
+            },
+            paint: {
+              'line-color': '#438EE4',
+              'line-width': 3,
+              'line-opacity': 0.7
+            }
+          },
+          {
+            id: 'gl-draw-polygon-vertex',
+            type: 'circle',
+            filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
+            paint: {
+              'circle-radius': 6,
+              'circle-color': '#fff',
+              'circle-stroke-color': '#438EE4',
+              'circle-stroke-width': 2
+            }
+          },
+          {
+            id: 'gl-draw-point-active',
+            type: 'circle',
+            filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true']],
+            paint: {
+              'circle-radius': 7,
+              'circle-color': '#fff',
+              'circle-stroke-color': '#438EE4',
+              'circle-stroke-width': 3
+            }
+          }
+        ]
+      });
+
+      // 添加绘图控件
+      map.current.addControl(drawRef.current);
+
+      // 添加测量功能
+      map.current.on('draw.create', (e) => {
+        const data = e.features[0];
+        if (data.geometry.type === 'LineString') {
+          const coordinates = data.geometry.coordinates;
+          let distance = 0;
+          let segments = [];
+          
+          // 计算每段距离并存储
+          for (let i = 0; i < coordinates.length - 1; i++) {
+            const from = turf.point(coordinates[i]);
+            const to = turf.point(coordinates[i + 1]);
+            const segmentDistance = turf.distance(from, to);
+            distance += segmentDistance;
+            segments.push({
+              start: coordinates[i],
+              end: coordinates[i + 1],
+              distance: segmentDistance
+            });
+          }
+
+          // 只有当线段有超过2个点（多段）时才显示分段距离
+          if (coordinates.length > 2) {
+            segments.forEach(segment => {
+              const midpoint = [
+                (segment.start[0] + segment.end[0]) / 2,
+                (segment.start[1] + segment.end[1]) / 2
+              ];
+              
+              new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                className: 'segment-popup'
+              })
+                .setLngLat(midpoint)
+                .setHTML(`${segment.distance.toFixed(2)} 公里`)
+                .addTo(map.current!);
+            });
+          }
+
+          // 总是显示总距离
+          new mapboxgl.Popup({
+            closeButton: true,
+            closeOnClick: false,
+            className: 'total-distance-popup'
+          })
+            .setLngLat(coordinates[coordinates.length - 1])
+            .setHTML(`<strong>总距离: ${distance.toFixed(2)} 公里</strong>`)
+            .addTo(map.current!);
+        } else if (data.geometry.type === 'Polygon') {
+          // 计算面积
+          const area = turf.area(data);
+          const center = turf.center(data);
+          new mapboxgl.Popup()
+            .setLngLat(center.geometry.coordinates)
+            .setHTML(`面积: ${(area / 1000000).toFixed(2)} 平方公里`)
+            .addTo(map.current!);
+        }
+      });
 
       // 添加3D建筑图层
       map.current.on('load', () => {
@@ -113,6 +310,10 @@ const Map3DView: React.FC = () => {
     }
   };
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   return (
     <Box sx={{ 
       p: 3, 
@@ -127,22 +328,90 @@ const Map3DView: React.FC = () => {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        mb: 3 
+        mb: 3,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 2,
+        p: 2,
+        boxShadow: 1
       }}>
-        <Typography variant="h4">三维地图</Typography>
-        <ToggleButtonGroup
-          value={viewMode}
-          exclusive
-          onChange={handleViewModeChange}
-          size="small"
-        >
-          <ToggleButton value="satellite">
-            卫星影像
-          </ToggleButton>
-          <ToggleButton value="streets">
-            街道地图
-          </ToggleButton>
-        </ToggleButtonGroup>
+        <Typography variant="h5" sx={{ fontWeight: 'medium' }}>三维地图</Typography>
+        <Stack direction="row" spacing={3} alignItems="center">
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            sx={{ 
+              backgroundColor: 'background.paper',
+              borderRadius: 1,
+              p: 0.5
+            }}
+          >
+            <Button 
+              size="small" 
+              variant="contained" 
+              onClick={() => handleDrawTool('draw_line_string')}
+              sx={{ minWidth: '88px' }}
+            >
+              距离测量
+            </Button>
+            <Button 
+              size="small" 
+              variant="contained" 
+              onClick={() => handleDrawTool('draw_polygon')}
+              sx={{ minWidth: '88px' }}
+            >
+              面积测量
+            </Button>
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={() => handleDrawTool('draw_point')}
+              sx={{ minWidth: '88px' }}
+            >
+              绘制点
+            </Button>
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={() => handleDrawTool('draw_line_string')}
+              sx={{ minWidth: '88px' }}
+            >
+              绘制线
+            </Button>
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={() => handleDrawTool('draw_polygon')}
+              sx={{ minWidth: '88px' }}
+            >
+              绘制面
+            </Button>
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={handleClearDraw} 
+              color="error"
+              sx={{ minWidth: '88px' }}
+            >
+              清空标绘
+            </Button>
+          </Stack>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={handleViewModeChange}
+            size="small"
+            sx={{ 
+              backgroundColor: 'background.paper',
+              '& .MuiToggleButton-root': {
+                px: 2,
+                py: 0.5
+              }
+            }}
+          >
+            <ToggleButton value="satellite">卫星影像</ToggleButton>
+            <ToggleButton value="streets">街道地图</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
       </Box>
       
       <Box 
@@ -157,6 +426,23 @@ const Map3DView: React.FC = () => {
           position: 'relative'
         }} 
       />
+      
+      {/* 添加操作提示 Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity="info" 
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {helpMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
