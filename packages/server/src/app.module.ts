@@ -21,6 +21,7 @@ import { EmergencyContact, EmergencyContactSchema } from './types/emergency-cont
 import { Scene, SceneSchema } from './types/scene';
 import { SceneController } from './controllers/scene.controller';
 import { SceneService } from './services/scene.service';
+import { SensorMockService } from './services/sensor-mock.service';
 
 // 添加预警模块相关的 Schema
 const AlertConfigSchema = new mongoose.Schema({
@@ -82,7 +83,8 @@ const RealTimeDataSchema = new mongoose.Schema({
     EmergencySupplyService,
     AlertService,
     EmergencyContactService,
-    SceneService
+    SceneService,
+    SensorMockService
   ],
 })
 export class AppModule {}

@@ -63,7 +63,11 @@ function App() {
             </MainLayout>
           }
         />
-        <Route path="/monitoring" element={<ModelViewer />} />
+        <Route path="/monitoring" element={
+          <MainLayout>
+            <ModelViewer />
+          </MainLayout>
+        } />
         <Route
           path="/map"
           element={

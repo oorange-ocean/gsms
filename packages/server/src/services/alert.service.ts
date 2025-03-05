@@ -26,7 +26,7 @@ export class AlertService {
     const query = deviceId ? { deviceId } : {};
     return this.realTimeDataModel.find(query)
       .sort({ timestamp: -1 })
-      .limit(deviceId ? 1 : 100)  // 如果指定设备则只返回最新一条
+      .limit(deviceId ? 1 : 20)  // 限制返回最新的20条数据
       .exec();
   }
 
