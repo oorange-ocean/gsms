@@ -91,6 +91,87 @@ export class Pipeline {
     return system;
   }
 
+  // 创建过滤器
+  public createFilter(): THREE.Group {
+    const filter = new THREE.Group();
+    
+    // 过滤器主体
+    const bodyGeometry = new THREE.CylinderGeometry(1, 1, 4, 16);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x436089,
+        shininess: 30 
+    });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    
+    // 添加连接法兰
+    const flangeGeometry = new THREE.CylinderGeometry(1.2, 1.2, 0.3, 16);
+    const flange1 = new THREE.Mesh(flangeGeometry, bodyMaterial);
+    flange1.position.y = 2;
+    const flange2 = new THREE.Mesh(flangeGeometry, bodyMaterial);
+    flange2.position.y = -2;
+    
+    filter.add(body);
+    filter.add(flange1);
+    filter.add(flange2);
+    
+    return filter;
+  }
+
+  // 创建计量装置
+  public createMeter(): THREE.Group {
+    const meter = new THREE.Group();
+    
+    // 计量装置主体
+    const bodyGeometry = new THREE.BoxGeometry(2, 1.5, 1);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x2a3f5f,
+        shininess: 50 
+    });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    
+    // 添加显示屏
+    const screenGeometry = new THREE.PlaneGeometry(1, 0.5);
+    const screenMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x000000,
+        emissive: 0x222222 
+    });
+    const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+    screen.position.z = 0.51;
+    
+    meter.add(body);
+    meter.add(screen);
+    
+    return meter;
+  }
+
+  // 创建调压装置
+  public createRegulator(): THREE.Group {
+    const regulator = new THREE.Group();
+    
+    // 调压器主体
+    const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.8, 2, 16);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x436089,
+        shininess: 30 
+    });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    
+    // 添加压力表
+    const gaugeGeometry = new THREE.CircleGeometry(0.3, 32);
+    const gaugeMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xffffff,
+        shininess: 50 
+    });
+    const gauge = new THREE.Mesh(gaugeGeometry, gaugeMaterial);
+    gauge.position.set(0.8, 0, 0);
+    gauge.rotation.y = Math.PI / 2;
+    
+    regulator.add(body);
+    regulator.add(gauge);
+    
+    return regulator;
+  }
+
   public getMesh(): THREE.Group {
     return this.mesh;
   }
