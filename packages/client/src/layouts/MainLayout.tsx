@@ -60,8 +60,21 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <Box sx={{ display: 'flex' }}>
       <StyledDrawer variant="permanent">
-        <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
-          <img src="/logo.png" alt="Logo" style={{ width: 120 }} />
+        <Box sx={{ 
+          mt: 2, 
+          mb: 2, 
+          textAlign: 'center',
+          px: 2
+        }}>
+          <img 
+            src="/logo.svg"
+            alt="安全监控系统"
+            style={{
+              width: '80%',
+              maxWidth: 120,
+              height: 'auto'
+            }} 
+          />
         </Box>
         <List>
           {menuItems.map((item) => (
