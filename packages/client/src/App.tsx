@@ -10,6 +10,7 @@ import EmergencyResponse from './views/EmergencyResponse';
 import ModelViewer from './components/ModelViewer';
 import MapView from './views/MapView';
 import Map3DView from './views/Map3DView';
+import InspectionView from './views/InspectionView';
 function App() {
   return (
     <Router>
@@ -81,6 +82,14 @@ function App() {
           element={
             <MainLayout>
               <Map3DView />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/inspection"
+          element={
+            <MainLayout>
+              <InspectionView />
             </MainLayout>
           }
         />

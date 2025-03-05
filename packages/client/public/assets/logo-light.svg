@@ -1,0 +1,26 @@
+<svg width="240" height="60" viewBox="0 0 240 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- 盾牌底座 -->
+  <path d="M30 5 L50 5 L50 45 L30 55 L10 45 L10 5 L30 5" 
+        fill="#1a237e" stroke="#1a237e" stroke-width="2"/>
+  
+  <!-- 雷达扫描效果 -->
+  <circle cx="30" cy="30" r="15" fill="none" stroke="#1a237e" stroke-width="1.5"/>
+  <circle cx="30" cy="30" r="10" fill="none" stroke="#1a237e" stroke-width="1.5"/>
+  <path d="M30 15 L30 45" stroke="#1a237e" stroke-width="1.5"/>
+  <path d="M15 30 L45 30" stroke="#1a237e" stroke-width="1.5"/>
+  
+  <!-- 扫描线动画 -->
+  <path d="M30 30 L45 20" stroke="#4CAF50" stroke-width="2">
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      from="0 30 30"
+      to="360 30 30"
+      dur="3s"
+      repeatCount="indefinite"/>
+  </path>
+  
+  <!-- 文字部分 -->
+  <text x="65" y="25" fill="#1a237e" font-family="Arial, sans-serif" font-size="16" font-weight="bold">安全监控</text>
+  <text x="65" y="45" fill="#1a237e" font-family="Arial, sans-serif" font-size="14">Security Monitor</text>
+</svg>

@@ -67,7 +67,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           px: 2
         }}>
           <img 
-            src="/logo.svg"
+            src="/assets/logo-dark.svg"
             alt="安全监控系统"
             style={{
               width: '80%',
