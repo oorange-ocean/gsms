@@ -30,7 +30,7 @@ function OBJModel({ path }: ModelProps) {
 // 默认设备配置
 const DEFAULT_DEVICE = {
   id: 'BV301113',
-  name: '杭嘉线来气越站去杭丽线管线电动球阀',
+  name: '杭甬杭湖站区主干线气液联动阀',
   model: '/models/factory_emergency_telephone/scene.gltf'
 };
 

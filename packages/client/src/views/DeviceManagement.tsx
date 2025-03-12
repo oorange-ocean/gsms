@@ -12,14 +12,41 @@ import {
   TableRow,
   Link,
   Typography,
-  CircularProgress
+  CircularProgress,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  IconButton
 } from '@mui/material';
-import { ProcessArea, Device } from '../types/device';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon
+} from '@mui/icons-material';
+import { ProcessArea, Device, PressureClass } from '../types/device';
 
 const DeviceManagement: React.FC = () => {
   const [currentArea, setCurrentArea] = useState<ProcessArea>(ProcessArea.INLET);
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [formData, setFormData] = useState({
+    deviceCode: '',
+    name: '',
+    pressureClass: PressureClass.CLASS150,
+    specification: '',
+    quickLink: '',
+    processArea: ProcessArea.INLET
+  });
 
   useEffect(() => {
     console.log('DeviceManagement 组件已挂载');
@@ -45,6 +72,101 @@ const DeviceManagement: React.FC = () => {
 
   const handleAreaChange = (_: React.SyntheticEvent, newValue: ProcessArea) => {
     setCurrentArea(newValue);
+    setFormData(prev => ({
+      ...prev,
+      processArea: newValue
+    }));
+  };
+
+  // 添加设备
+  const handleAdd = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/devices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      if (!response.ok) throw new Error('添加设备失败');
+      await fetchDevices(currentArea);
+      setDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error('添加设备失败:', error);
+    }
+  };
+
+  // 更新设备
+  const handleUpdate = async () => {
+    if (!selectedDevice?._id) return;
+    try {
+      const response = await fetch(`http://localhost:3000/devices/${selectedDevice._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      if (!response.ok) throw new Error('更新设备失败');
+      await fetchDevices(currentArea);
+      setDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error('更新设备失败:', error);
+    }
+  };
+
+  // 删除设备
+  const handleDelete = async () => {
+    if (!selectedDevice?._id) return;
+    try {
+      const response = await fetch(`http://localhost:3000/devices/${selectedDevice._id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('删除设备失败');
+      await fetchDevices(currentArea);
+      setDeleteDialogOpen(false);
+      setSelectedDevice(null);
+    } catch (error) {
+      console.error('删除设备失败:', error);
+    }
+  };
+
+  // 重置表单
+  const resetForm = () => {
+    setFormData({
+      deviceCode: '',
+      name: '',
+      pressureClass: PressureClass.CLASS150,
+      specification: '',
+      quickLink: '',
+      processArea: currentArea
+    });
+    setSelectedDevice(null);
+  };
+
+  // 打开编辑对话框
+  const handleEdit = (device: Device) => {
+    setSelectedDevice(device);
+    setFormData({
+      deviceCode: device.deviceCode,
+      name: device.name,
+      pressureClass: device.pressureClass,
+      specification: device.specification,
+      quickLink: device.quickLink,
+      processArea: device.processArea
+    });
+    setDialogOpen(true);
+  };
+
+  // 处理表单输入变化
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name as string]: value
+    }));
   };
 
   return (
@@ -54,7 +176,19 @@ const DeviceManagement: React.FC = () => {
       height: 'calc(100vh - 32px)', // 减去 padding
       overflow: 'hidden'
     }}>
-      <Typography variant="h4" sx={{ mb: 3, flexShrink: 0 }}>设备管理</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4">设备管理</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            resetForm();
+            setDialogOpen(true);
+          }}
+        >
+          添加设备
+        </Button>
+      </Box>
       
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, flexShrink: 0 }}>
         <Tabs 
@@ -134,6 +268,76 @@ const DeviceManagement: React.FC = () => {
           </Box>
         )}
       </TableContainer>
+
+      {/* 添加/编辑设备对话框 */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{selectedDevice ? '编辑设备' : '添加设备'}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              name="deviceCode"
+              label="设备编号"
+              value={formData.deviceCode}
+              onChange={handleInputChange}
+              fullWidth
+            />
+            <TextField
+              name="name"
+              label="设备名称"
+              value={formData.name}
+              onChange={handleInputChange}
+              fullWidth
+            />
+            <FormControl fullWidth>
+              <InputLabel>压力等级</InputLabel>
+              <Select
+                name="pressureClass"
+                value={formData.pressureClass}
+                onChange={(e) => handleInputChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
+                label="压力等级"
+              >
+                {Object.values(PressureClass).map(pc => (
+                  <MenuItem key={pc} value={pc}>{pc}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              name="specification"
+              label="规格尺寸"
+              value={formData.specification}
+              onChange={handleInputChange}
+              fullWidth
+            />
+            <TextField
+              name="quickLink"
+              label="快速链接"
+              value={formData.quickLink}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>取消</Button>
+          <Button onClick={selectedDevice ? handleUpdate : handleAdd} variant="contained">
+            {selectedDevice ? '更新' : '添加'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 删除确认对话框 */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>确认删除</DialogTitle>
+        <DialogContent>
+          确定要删除设备 {selectedDevice?.name} 吗？此操作不可撤销。
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>取消</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            删除
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

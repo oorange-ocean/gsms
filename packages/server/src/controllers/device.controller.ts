@@ -1,6 +1,6 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
 import { DeviceService } from '../services/device.service';
-import { ProcessArea } from '../types/device';
+import { Device, ProcessArea } from '../types/device';
 
 @Controller('devices')
 export class DeviceController {
@@ -19,5 +19,20 @@ export class DeviceController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.deviceService.findOne(id);
+  }
+
+  @Post()
+  async create(@Body() device: Device) {
+    return this.deviceService.create(device);
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() device: Device) {
+    return this.deviceService.update(id, device);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.deviceService.remove(id);
   }
 } 
